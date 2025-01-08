@@ -3,116 +3,163 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Enhanced Water Intake Tracker</title>
+  <title>Water Intake Tracker</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #f3f4f6;
+      margin: 0;
+      padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
+      min-height: 100vh;
     }
     .card {
       background: #ffffff;
       border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      width: 350px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 400px;
       padding: 20px;
       text-align: center;
     }
     .card h2 {
-      font-size: 24px;
-      margin-bottom: 10px;
+      font-size: 26px;
+      margin-bottom: 15px;
+      color: #111827;
     }
-    .card .count, .card .liters {
-      font-size: 48px;
-      color: #10b981;
+    .stat {
+      font-size: 22px;
+      color: #2563eb;
       margin: 10px 0;
     }
-    .card .remaining {
-      font-size: 16px;
+    .remaining {
+      font-size: 18px;
       color: #f59e0b;
+      margin-top: 5px;
     }
-    .card button {
+    .btn-container {
+      margin: 20px 0;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn {
       background: #3b82f6;
-      color: #fff;
+      color: white;
       border: none;
       border-radius: 5px;
       padding: 10px 15px;
-      font-size: 16px;
+      font-size: 14px;
       cursor: pointer;
-      margin: 5px;
+      transition: background 0.3s;
     }
-    .card button:hover {
+    .btn:hover {
       background: #2563eb;
     }
-    .reset-time {
-      margin-top: 10px;
-      font-size: 12px;
+    .history {
+      text-align: left;
+      font-size: 14px;
       color: #6b7280;
+      margin-top: 15px;
+    }
+    .history strong {
+      color: #111827;
     }
   </style>
 </head>
 <body>
   <div class="card">
     <h2>Water Intake Tracker</h2>
-    <div class="count" id="glassCount">0</div>
-    <p>Glasses</p>
-    <div class="liters" id="literCount">0.0</div>
-    <p>Liters Consumed</p>
-    <p class="remaining" id="remainingWater">4.0 liters left to reach daily goal</p>
-    <button onclick="incrementWater()">Add 300 ml</button>
-    <button onclick="incrementWater(400)">Add 400 ml</button>
-    <button onclick="resetTracker()">Reset</button>
-    <p class="reset-time">Resets daily at 12:00 AM</p>
+    <p class="stat">Today: <span id="currentLiters">0.0</span> liters</p>
+    <p class="remaining" id="remainingGoal">2.0 liters left to reach daily goal</p>
+    <div class="btn-container">
+      <button class="btn" onclick="incrementWater(100)">+100 ml</button>
+      <button class="btn" onclick="incrementWater(300)">+300 ml</button>
+      <button class="btn" onclick="incrementWater(400)">+400 ml</button>
+      <button class="btn" onclick="incrementWater(500)">+500 ml</button>
+    </div>
+    <button class="btn" onclick="resetTracker()">Reset Today</button>
+    <div class="history" id="history">
+      <h3>Previous Days:</h3>
+      <div id="historyData">No data available</div>
+    </div>
   </div>
 
   <script>
-    const glassCountElement = document.getElementById('glassCount');
-    const literCountElement = document.getElementById('literCount');
-    const remainingWaterElement = document.getElementById('remainingWater');
-    const dailyGoal = 4000; // in ml (2 liters)
-    const storageKey = 'dailyWaterTracker';
+    const storageKey = 'waterIntakeData';
+    const dailyGoal = 2000; // in ml (2 liters)
 
+    // Initialize Tracker
     function initializeTracker() {
       const now = new Date();
-      const lastReset = localStorage.getItem('lastReset');
       const today = now.toISOString().split('T')[0];
+      let data = JSON.parse(localStorage.getItem(storageKey)) || {};
 
-      if (lastReset !== today) {
-        localStorage.setItem(storageKey, JSON.stringify({ glasses: 0, totalMl: 0 }));
-        localStorage.setItem('lastReset', today);
+      // Reset today if not already initialized
+      if (!data[today]) {
+        data[today] = { totalMl: 0 };
+        localStorage.setItem(storageKey, JSON.stringify(data));
       }
+
       updateUI();
     }
 
-    function incrementWater(amount = 300) {
-      const trackerData = JSON.parse(localStorage.getItem(storageKey)) || { glasses: 0, totalMl: 0 };
-      trackerData.glasses++;
-      trackerData.totalMl += amount;
+    // Increment Water
+    function incrementWater(amount) {
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+      let data = JSON.parse(localStorage.getItem(storageKey)) || {};
 
-      localStorage.setItem(storageKey, JSON.stringify(trackerData));
+      if (!data[today]) {
+        data[today] = { totalMl: 0 };
+      }
+
+      data[today].totalMl += amount;
+      localStorage.setItem(storageKey, JSON.stringify(data));
       updateUI();
     }
 
+    // Reset Today
     function resetTracker() {
-      localStorage.setItem(storageKey, JSON.stringify({ glasses: 0, totalMl: 0 }));
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+      let data = JSON.parse(localStorage.getItem(storageKey)) || {};
+
+      if (data[today]) {
+        data[today].totalMl = 0;
+        localStorage.setItem(storageKey, JSON.stringify(data));
+      }
+
       updateUI();
     }
 
+    // Update UI
     function updateUI() {
-      const trackerData = JSON.parse(localStorage.getItem(storageKey)) || { glasses: 0, totalMl: 0 };
-      const totalLiters = (trackerData.totalMl / 1000).toFixed(2);
-      const remainingLiters = ((dailyGoal - trackerData.totalMl) / 1000).toFixed(2);
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+      let data = JSON.parse(localStorage.getItem(storageKey)) || {};
 
-      glassCountElement.textContent = trackerData.glasses;
-      literCountElement.textContent = totalLiters;
-      remainingWaterElement.textContent = `${remainingLiters > 0 ? remainingLiters : 0} liters left to reach daily goal`;
+      const currentDayData = data[today] || { totalMl: 0 };
+      const totalLiters = (currentDayData.totalMl / 1000).toFixed(2);
+      const remainingLiters = ((dailyGoal - currentDayData.totalMl) / 1000).toFixed(2);
+
+      document.getElementById('currentLiters').textContent = totalLiters;
+      document.getElementById('remainingGoal').textContent = `${remainingLiters > 0 ? remainingLiters : 0} liters left to reach daily goal`;
+
+      // Update History
+      const historyData = Object.keys(data)
+        .filter(date => date !== today)
+        .sort((a, b) => new Date(b) - new Date(a))
+        .map(date => `<p><strong>${date}:</strong> ${(data[date].totalMl / 1000).toFixed(2)} liters</p>`)
+        .join('');
+
+      document.getElementById('historyData').innerHTML = historyData || 'No data available';
     }
 
+    // Initialize on page load
     initializeTracker();
   </script>
 </body>
