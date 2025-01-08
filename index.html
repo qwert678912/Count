@@ -63,7 +63,7 @@
     <p>Glasses</p>
     <div class="liters" id="literCount">0.0</div>
     <p>Liters Consumed</p>
-    <p class="remaining" id="remainingWater">2.0 liters left to reach daily goal</p>
+    <p class="remaining" id="remainingWater">4.0 liters left to reach daily goal</p>
     <button onclick="incrementWater()">Add 300 ml</button>
     <button onclick="incrementWater(400)">Add 400 ml</button>
     <button onclick="resetTracker()">Reset</button>
@@ -74,7 +74,7 @@
     const glassCountElement = document.getElementById('glassCount');
     const literCountElement = document.getElementById('literCount');
     const remainingWaterElement = document.getElementById('remainingWater');
-    const dailyGoal = 2000; // in ml (2 liters)
+    const dailyGoal = 4000; // in ml (2 liters)
     const storageKey = 'dailyWaterTracker';
 
     function initializeTracker() {
