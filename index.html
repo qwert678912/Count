@@ -1,1 +1,91 @@
-index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Water Intake Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f4f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      padding: 20px;
+      text-align: center;
+    }
+    .card h2 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .card .count {
+      font-size: 48px;
+      color: #10b981;
+      margin: 20px 0;
+    }
+    .card button {
+      background: #3b82f6;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 15px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .card button:hover {
+      background: #2563eb;
+    }
+    .reset-time {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Water Intake Tracker</h2>
+    <div class="count" id="waterCount">0</div>
+    <button onclick="incrementWater()">Add Glass</button>
+    <p class="reset-time">Resets daily at 12:00 AM</p>
+  </div>
+
+  <script>
+    const countElement = document.getElementById('waterCount');
+    const storageKey = 'dailyWaterCount';
+
+    // Initialize count
+    function initializeCount() {
+      const now = new Date();
+      const lastReset = localStorage.getItem('lastReset');
+      const today = now.toISOString().split('T')[0];
+
+      if (lastReset !== today) {
+        localStorage.setItem(storageKey, 0);
+        localStorage.setItem('lastReset', today);
+      }
+      countElement.textContent = localStorage.getItem(storageKey) || 0;
+    }
+
+    // Increment water count
+    function incrementWater() {
+      let count = parseInt(localStorage.getItem(storageKey)) || 0;
+      count++;
+      localStorage.setItem(storageKey, count);
+      countElement.textContent = count;
+    }
+
+    // Initialize on page load
+    initializeCount();
+  </script>
+</body>
+</html>
