@@ -4,93 +4,74 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Water Intake Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
+    body.dark {
+      background-color: #1f2937;
+      color: #f3f4f6;
+    }
+    body.light {
       background-color: #f3f4f6;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-    .card {
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      width: 400px;
-      padding: 20px;
-      text-align: center;
-    }
-    .card h2 {
-      font-size: 26px;
-      margin-bottom: 15px;
-      color: #111827;
-    }
-    .stat {
-      font-size: 22px;
-      color: #2563eb;
-      margin: 10px 0;
-    }
-    .remaining {
-      font-size: 18px;
-      color: #f59e0b;
-      margin-top: 5px;
-    }
-    .btn-container {
-      margin: 20px 0;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    .btn {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 10px 15px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .btn:hover {
-      background: #2563eb;
-    }
-    .history {
-      text-align: left;
-      font-size: 14px;
-      color: #6b7280;
-      margin-top: 15px;
-    }
-    .history strong {
-      color: #111827;
+      color: #1f2937;
     }
   </style>
 </head>
-<body>
-  <div class="card">
-    <h2>Water Intake Tracker</h2>
-    <p class="stat">Today: <span id="currentLiters">0.0</span> liters</p>
-    <p class="remaining" id="remainingGoal">2.0 liters left to reach daily goal</p>
-    <div class="btn-container">
-      <button class="btn" onclick="incrementWater(100)">+100 ml</button>
-      <button class="btn" onclick="incrementWater(300)">+300 ml</button>
-      <button class="btn" onclick="incrementWater(400)">+400 ml</button>
-      <button class="btn" onclick="incrementWater(500)">+500 ml</button>
-    </div>
-    <button class="btn" onclick="resetTracker()">Reset Today</button>
-    <div class="history" id="history">
-      <h3>Previous Days:</h3>
-      <div id="historyData">No data available</div>
+<body class="light transition-colors duration-300">
+  <div class="flex justify-center items-center min-h-screen">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-96 transition-colors duration-300">
+      <!-- Title -->
+      <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-bold dark:text-gray-100">Water Intake Tracker</h2>
+        <button id="themeSwitch" 
+                class="bg-gray-200 dark:bg-gray-600 p-2 rounded-full focus:outline-none">
+          <span id="themeIcon">🌞</span>
+        </button>
+      </div>
+      <!-- Stats -->
+      <div class="mt-4">
+        <p class="text-lg dark:text-gray-300">Today:</p>
+        <div class="flex items-center justify-between mt-2">
+          <p class="text-3xl font-semibold text-blue-500" id="litersCount">0.0 L</p>
+          <p class="text-gray-500 dark:text-gray-400" id="glassCount">0 Glasses</p>
+        </div>
+        <p class="mt-2 text-yellow-500" id="remainingGoal">4.0 L left to reach daily goal</p>
+      </div>
+      <!-- Buttons -->
+      <div class="mt-6 grid grid-cols-2 gap-3">
+        <button onclick="incrementWater(100)" 
+                class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors">
+          +100 ml
+        </button>
+        <button onclick="incrementWater(300)" 
+                class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors">
+          +300 ml
+        </button>
+        <button onclick="incrementWater(400)" 
+                class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors">
+          +400 ml
+        </button>
+        <button onclick="incrementWater(500)" 
+                class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors">
+          +500 ml
+        </button>
+      </div>
+      <button onclick="resetTracker()" 
+              class="mt-4 w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition-colors">
+        Reset Today
+      </button>
+      <!-- History -->
+      <div class="mt-6">
+        <h3 class="text-lg font-semibold dark:text-gray-200">Previous Days</h3>
+        <div id="historyData" class="mt-2 text-sm dark:text-gray-300">
+          No data available
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
     const storageKey = 'waterIntakeData';
-    const dailyGoal = 2000; // in ml (2 liters)
+    const dailyGoal = 4000; // in ml (4 liters)
 
     // Initialize Tracker
     function initializeTracker() {
@@ -100,7 +81,7 @@
 
       // Reset today if not already initialized
       if (!data[today]) {
-        data[today] = { totalMl: 0 };
+        data[today] = { totalMl: 0, glasses: 0 };
         localStorage.setItem(storageKey, JSON.stringify(data));
       }
 
@@ -114,15 +95,16 @@
       let data = JSON.parse(localStorage.getItem(storageKey)) || {};
 
       if (!data[today]) {
-        data[today] = { totalMl: 0 };
+        data[today] = { totalMl: 0, glasses: 0 };
       }
 
       data[today].totalMl += amount;
+      data[today].glasses++;
       localStorage.setItem(storageKey, JSON.stringify(data));
       updateUI();
     }
 
-    // Reset Today
+    // Reset Tracker
     function resetTracker() {
       const now = new Date();
       const today = now.toISOString().split('T')[0];
@@ -130,6 +112,7 @@
 
       if (data[today]) {
         data[today].totalMl = 0;
+        data[today].glasses = 0;
         localStorage.setItem(storageKey, JSON.stringify(data));
       }
 
@@ -142,22 +125,36 @@
       const today = now.toISOString().split('T')[0];
       let data = JSON.parse(localStorage.getItem(storageKey)) || {};
 
-      const currentDayData = data[today] || { totalMl: 0 };
+      const currentDayData = data[today] || { totalMl: 0, glasses: 0 };
       const totalLiters = (currentDayData.totalMl / 1000).toFixed(2);
       const remainingLiters = ((dailyGoal - currentDayData.totalMl) / 1000).toFixed(2);
 
-      document.getElementById('currentLiters').textContent = totalLiters;
-      document.getElementById('remainingGoal').textContent = `${remainingLiters > 0 ? remainingLiters : 0} liters left to reach daily goal`;
+      document.getElementById('litersCount').textContent = `${totalLiters} L`;
+      document.getElementById('glassCount').textContent = `${currentDayData.glasses} Glasses`;
+      document.getElementById('remainingGoal').textContent = `${remainingLiters > 0 ? remainingLiters : 0} L left to reach daily goal`;
 
       // Update History
       const historyData = Object.keys(data)
         .filter(date => date !== today)
         .sort((a, b) => new Date(b) - new Date(a))
-        .map(date => `<p><strong>${date}:</strong> ${(data[date].totalMl / 1000).toFixed(2)} liters</p>`)
+        .map(date => `<p><strong>${date}:</strong> ${(data[date].totalMl / 1000).toFixed(2)} L (${data[date].glasses} Glasses)</p>`)
         .join('');
 
       document.getElementById('historyData').innerHTML = historyData || 'No data available';
     }
+
+    // Toggle Theme
+    document.getElementById('themeSwitch').addEventListener('click', () => {
+      const body = document.body;
+      const themeIcon = document.getElementById('themeIcon');
+      if (body.classList.contains('dark')) {
+        body.classList.replace('dark', 'light');
+        themeIcon.textContent = '🌞';
+      } else {
+        body.classList.replace('light', 'dark');
+        themeIcon.textContent = '🌙';
+      }
+    });
 
     // Initialize on page load
     initializeTracker();
