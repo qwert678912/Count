@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Water Intake Tracker</title>
+  <title>Enhanced Water Intake Tracker</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -19,7 +19,7 @@
       border: 1px solid #e5e7eb;
       border-radius: 8px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      width: 300px;
+      width: 350px;
       padding: 20px;
       text-align: center;
     }
@@ -27,10 +27,14 @@
       font-size: 24px;
       margin-bottom: 10px;
     }
-    .card .count {
+    .card .count, .card .liters {
       font-size: 48px;
       color: #10b981;
-      margin: 20px 0;
+      margin: 10px 0;
+    }
+    .card .remaining {
+      font-size: 16px;
+      color: #f59e0b;
     }
     .card button {
       background: #3b82f6;
@@ -40,6 +44,7 @@
       padding: 10px 15px;
       font-size: 16px;
       cursor: pointer;
+      margin: 5px;
     }
     .card button:hover {
       background: #2563eb;
@@ -54,38 +59,61 @@
 <body>
   <div class="card">
     <h2>Water Intake Tracker</h2>
-    <div class="count" id="waterCount">0</div>
-    <button onclick="incrementWater()">Add Glass</button>
+    <div class="count" id="glassCount">0</div>
+    <p>Glasses</p>
+    <div class="liters" id="literCount">0.0</div>
+    <p>Liters Consumed</p>
+    <p class="remaining" id="remainingWater">2.0 liters left to reach daily goal</p>
+    <button onclick="incrementWater()">Add 300 ml</button>
+    <button onclick="incrementWater(400)">Add 400 ml</button>
+    <button onclick="resetTracker()">Reset</button>
     <p class="reset-time">Resets daily at 12:00 AM</p>
   </div>
 
   <script>
-    const countElement = document.getElementById('waterCount');
-    const storageKey = 'dailyWaterCount';
+    const glassCountElement = document.getElementById('glassCount');
+    const literCountElement = document.getElementById('literCount');
+    const remainingWaterElement = document.getElementById('remainingWater');
+    const dailyGoal = 2000; // in ml (2 liters)
+    const storageKey = 'dailyWaterTracker';
 
-    // Initialize count
-    function initializeCount() {
+    function initializeTracker() {
       const now = new Date();
       const lastReset = localStorage.getItem('lastReset');
       const today = now.toISOString().split('T')[0];
 
       if (lastReset !== today) {
-        localStorage.setItem(storageKey, 0);
+        localStorage.setItem(storageKey, JSON.stringify({ glasses: 0, totalMl: 0 }));
         localStorage.setItem('lastReset', today);
       }
-      countElement.textContent = localStorage.getItem(storageKey) || 0;
+      updateUI();
     }
 
-    // Increment water count
-    function incrementWater() {
-      let count = parseInt(localStorage.getItem(storageKey)) || 0;
-      count++;
-      localStorage.setItem(storageKey, count);
-      countElement.textContent = count;
+    function incrementWater(amount = 300) {
+      const trackerData = JSON.parse(localStorage.getItem(storageKey)) || { glasses: 0, totalMl: 0 };
+      trackerData.glasses++;
+      trackerData.totalMl += amount;
+
+      localStorage.setItem(storageKey, JSON.stringify(trackerData));
+      updateUI();
     }
 
-    // Initialize on page load
-    initializeCount();
+    function resetTracker() {
+      localStorage.setItem(storageKey, JSON.stringify({ glasses: 0, totalMl: 0 }));
+      updateUI();
+    }
+
+    function updateUI() {
+      const trackerData = JSON.parse(localStorage.getItem(storageKey)) || { glasses: 0, totalMl: 0 };
+      const totalLiters = (trackerData.totalMl / 1000).toFixed(2);
+      const remainingLiters = ((dailyGoal - trackerData.totalMl) / 1000).toFixed(2);
+
+      glassCountElement.textContent = trackerData.glasses;
+      literCountElement.textContent = totalLiters;
+      remainingWaterElement.textContent = `${remainingLiters > 0 ? remainingLiters : 0} liters left to reach daily goal`;
+    }
+
+    initializeTracker();
   </script>
 </body>
 </html>
