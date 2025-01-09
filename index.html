@@ -9,33 +9,24 @@
     /* Glass Container */
     .glass-container {
       position: relative;
-      width: 100px;
-      height: 200px;
+      width: 120px;
+      height: 240px;
       margin: 0 auto;
-      border: 3px solid #3b82f6;
+      border: 4px solid #3b82f6;
       border-radius: 10px;
       background: transparent;
       overflow: hidden;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
 
-    /* Water Animation */
+    /* Water Level */
     .water {
       position: absolute;
-      bottom: -100%;
+      bottom: 0;
       width: 100%;
-      height: 100%;
+      height: 0%;
       background: #3b82f6;
-      animation: fillUp 3s ease-in-out forwards;
-    }
-
-    @keyframes fillUp {
-      0% {
-        bottom: -100%;
-      }
-      100% {
-        bottom: 0;
-      }
+      transition: height 1s ease-in-out;
     }
   </style>
 </head>
@@ -43,7 +34,7 @@
   <div class="flex flex-col justify-center items-center min-h-screen">
     <!-- Glass Animation -->
     <div class="glass-container">
-      <div class="water"></div>
+      <div class="water" id="waterLevel"></div>
     </div>
 
     <!-- Water Intake Tracker -->
@@ -101,6 +92,7 @@
   <script>
     const storageKey = 'waterIntakeData';
     const dailyGoal = 4000; // in ml (4 liters)
+    const glassHeight = 240; // height of the glass in px
 
     // Initialize Tracker
     function initializeTracker() {
@@ -108,7 +100,6 @@
       const today = now.toISOString().split('T')[0];
       let data = JSON.parse(localStorage.getItem(storageKey)) || {};
 
-      // Reset today if not already initialized
       if (!data[today]) {
         data[today] = { totalMl: 0, glasses: 0 };
         localStorage.setItem(storageKey, JSON.stringify(data));
@@ -161,6 +152,11 @@
       document.getElementById('litersCount').textContent = `${totalLiters} L`;
       document.getElementById('glassCount').textContent = `${currentDayData.glasses} Glasses`;
       document.getElementById('remainingGoal').textContent = `${remainingLiters > 0 ? remainingLiters : 0} L left to reach daily goal`;
+
+      // Update Glass Animation
+      const waterLevel = document.getElementById('waterLevel');
+      const waterHeight = (currentDayData.totalMl / dailyGoal) * glassHeight;
+      waterLevel.style.height = `${waterHeight}px`;
 
       // Update History
       const historyData = Object.keys(data)
